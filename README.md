@@ -93,41 +93,44 @@ Prototype and build IoT systems without setting up servers or developing web sof
  
 # PROGRAM:
 ```
+#define ldr_pin 34
+#define led_pin 2
 #include "ThingSpeak.h"
 #include <WiFi.h>
 
-
-char ssid[] = "poco";         
-char pass[] = "12345678";
-WiFiClient client;
-unsigned long myChannelNumber = 3108777;
-const int LightField = 1; 
-const char * myWriteAPIKey = "XRZA3633DBXFT6DA";
-
-#define ldr_pin 34
-#define led_pin 2
+char ssid[] = "Poco M2 Pro";
+char pass[] = "Chandru@17";
 
 int ldrValue = 0;
-int darkValue = 4095;
-int brightValue = 0;
 int lightPercentage = 0;
+const int darkValue = 4095;
+const int brightValue = 0;
+
+WiFiClient client;
+
+unsigned long myChannelNumber =  3119158 ;
+const int LightIntensityField = 1;
+const char* myWriteAPIKey = "EXCQS7VIQI4CDHYK";
 
 void setup() {
   Serial.begin(115200);
   pinMode(ldr_pin, INPUT);
   pinMode(led_pin, OUTPUT);
-
-  WiFi.begin(ssid, pass);    
+  WiFi.mode(WIFI_STA);
   ThingSpeak.begin(client);
 }
 
 void loop() {
-   while (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Connecting to WiFi...");
-    WiFi.begin(ssid, pass);
-    delay(5000);
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.print("Attempting to connect to SSID: ");
+    Serial.println(ssid);
+    while (WiFi.status() != WL_CONNECTED) {
+      WiFi.begin(ssid, pass);
+      Serial.print(".");
+      delay(5000);
+    }
+    Serial.println("\nConnected.");
   }
-
 
   ldrValue = analogRead(ldr_pin);
   lightPercentage = map(ldrValue, darkValue, brightValue, 0, 100);
@@ -137,14 +140,13 @@ void loop() {
   Serial.print(lightPercentage);
   Serial.println("%");
 
-  if (lightPercentage < 50) {        
+  if (lightPercentage < 50)
     digitalWrite(led_pin, HIGH);
-  } else {                           
+  else
     digitalWrite(led_pin, LOW);
-  }
-ThingSpeak.setField(LightField, lightPercentage);
-ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
-delay(4000);
+
+  ThingSpeak.writeField(myChannelNumber, LightIntensityField, lightPercentage, myWriteAPIKey);
+  delay(5000);
 }
 ```
 # CIRCUIT DIAGRAM:
